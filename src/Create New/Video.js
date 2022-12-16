@@ -109,7 +109,8 @@ function Video() {
             },
             () => {
                 uploadtask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    videourl = downloadURL;
+                    setvideourl(downloadURL)
+                    setvideo({ ...video, videoURL: downloadURL });
                 });
             }
         );
@@ -117,7 +118,7 @@ function Video() {
 
     useEffect(() => {
         firedb
-            .collection("files")
+            .collection("video")
             .doc(id)
             .get()
             .then((res) => {
@@ -130,7 +131,7 @@ function Video() {
     function createVideo() {
         const data = { ...video, tags: tags }
         firedb
-            .collection("files")
+            .collection("video")
             .doc(id)
             .set(data)
             .then(() => {
@@ -158,14 +159,32 @@ function Video() {
             twitter: twitter.current.value,
         }
 
+        if (!thumbnailurl) {
+            alert("please upload thumbnail for the video")
+        }
+        if (!video.videoURL) {
+            alert("please upload video")
+        }
         if (!details.title) {
             alert("please add title for the video")
         }
         if (!details.label) {
             alert("please add label for the video")
         }
-        console.log(details)
-
+        const data = { ...video, tags: tags, ...details, thumbnail: thumbnailurl }
+        // console.log(data)
+        // return;
+        firedb
+            .collection("video")
+            .doc(id)
+            .set(data)
+            .then(() => {
+                new AWN().success("success");
+                history.replace("/panel/assets/video");
+            })
+            .catch((e) => {
+                new AWN().alert(e.message);
+            });
     }
     return (
         <div className="bg-dashboard_bg min-h-screen text-white">
